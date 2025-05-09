@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Speed Test</title>
+  <style>
+    /* Dark Theme Styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #E0E0E0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+      color: #fff;
+    }
+
+    /* Select box styling */
+    select {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 5px;
+    }
+
+    /* Styling for the text display area */
+    #textDisplay {
+      font-size: 22px;
+      margin: 20px 0;
+      width: 80%;
+      max-width: 800px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      text-align: center;
+      line-height: 1.6;
+      color: #fff;
+    }
+
+    /* Styling for correct and incorrect characters */
+    .correct {
+      color: green;
+    }
+
+    .incorrect {
+      color: red;
+    }
+
+    /* Input area with 4 lines and a larger font */
+    textarea {
+      width: 80%;
+      max-width: 800px;
+      height: 120px;
+      padding: 15px;
+      font-size: 20px;
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 5px;
+      resize: none;
+      margin-bottom: 20px;
+    }
+
+    /* Timer, WPM, and accuracy styling */
+    #timer, #wpm, #accuracy {
+      font-size: 18px;
+      margin: 10px;
+      color: #fff;
+    }
+
+    /* Button styling */
+    button {
+      padding: 12px 25px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    /* Responsiveness for mobile */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      #textDisplay {
+        font-size: 18px;
+      }
+      textarea {
+        font-size: 18px;
+        height: 100px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+      }
+      #timer, #wpm, #accuracy {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Typing Speed Test</h1>
+  
+  <!-- Level Selection -->
+  <div>
+    <label for="levelSelect">Select Difficulty Level:</label>
+    <select id="levelSelect">
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+  </div>
+
+  <!-- Display the text for typing -->
+  <div id="textDisplay"></div>
+
+  <!-- Input box for typing -->
+  <textarea id="inputBox" placeholder="Start typing here..." disabled></textarea>
+
+  <!-- Timer, WPM, and Accuracy Displays -->
+  <div id="timer">Time: 0s</div>
+  <div id="wpm">WPM: 0</div>
+  <div id="accuracy">Accuracy: 100%</div>
+
+  <!-- Restart Button -->
+  <button id="restartBtn">Restart</button>
+
+  <script>
+    const textDisplay = document.getElementById("textDisplay");
+    const inputBox = document.getElementById("inputBox");
+    const wpmDisplay = document.getElementById("wpm");
+    const accuracyDisplay = document.getElementById("accuracy");
+    const timerDisplay = document.getElementById("timer");
+    const restartBtn = document.getElementById("restartBtn");
+    const levelSelect = document.getElementById("levelSelect");
+
+    const paragraphs = {
+      easy: [
+        "The dog chased a ball across the room.",
+        "The sun sets behind the mountains, making the sky glow.",
+        "Raindrops tapped softly on the window.",
+        "He packed his bag to catch the early train.",
+        "The band played loudly, filling the hall with music.",
+        "She offered him a warm cup of tea.",
+        "The children ran happily in the park.",
+        "A soft breeze carried the scent of flowers.",
+        "They sat by the campfire, telling stories.",
+        "She opened the book and smiled at the old notes."
+      ],
+      medium: [
+        "The scientist reviewed results carefully, uncovering new insights and improving their understanding of complex phenomena.",
+        "Astronomers captured beautiful images of stars and galaxies, enhancing our understanding of the universe.",
+        "Engineers tested new technologies that could change the way we use energy and resources.",
+        "Doctors researched innovative treatments that could help cure diseases more effectively.",
+        "The artist painted a beautiful picture, mixing colors and techniques with passion and creativity.",
+        "Teachers inspired students with new ideas and a love for learning.",
+        "The explorer ventured into unknown lands, mapping uncharted regions and discovering new species.",
+        "Farmers grew healthy crops, using sustainable practices to protect the environment.",
+        "The writer crafted a compelling story that captivated readers from start to finish.",
+        "The musician composed a song that resonated with the emotions of listeners."
+      ],
+      hard: [
+        "The scientist meticulously reviewed experimental results, uncovering unexpected insights hidden within layers of complex scientific observations and measurements, ultimately advancing the field.",
+        "Geographers ventured into uncharted territories, documenting unfamiliar landscapes and compiling critical environmental data essential for conservation, mapping ecosystems, and supporting geographic research efforts globally.",
+        "Astronomers observed celestial phenomena through powerful telescopes, capturing detailed images of distant stars and galaxies that deepen humanity's understanding of cosmic origins, structures, and universal evolution.",
+        "Physicists tested groundbreaking hypotheses in advanced laboratories, pushing the limits of known physical laws, reshaping fundamental assumptions, and opening doors to revolutionary scientific discoveries.",
+        "Marine biologists monitored coral reef health closely, identifying key factors contributing to reef resilience and formulating innovative strategies for effective ocean conservation and marine ecosystem preservation.",
+        "Anthropologists analyzed ancient cave paintings, carefully decoding symbolic representations that shed light on early human communication, social rituals, and the rich development of prehistoric cultures.",
+        "Ecologists assessed the effects of climate change on species migration, providing vital data that informs global conservation policies, biodiversity preservation, and long-term sustainability initiatives worldwide.",
+        "Chemists synthesized entirely new compounds with unique, tailored properties, opening exciting possibilities for innovations in energy storage, materials science, and advanced medical treatments and technologies.",
+        "Neuroscientists mapped intricate neural networks, examining how various brain regions interact during complex cognitive tasks, revealing fundamental mechanisms underlying human memory, emotion, and learning capabilities.",
+        "A mathematician spent hours exploring theoretical proofs, searching for patterns that revealed surprising connections between abstract mathematical concepts and real-world applications, bridging gaps."
+      ]
+    };
+
+    let currentText = "";
+    let timer = 0;
+    let interval = null;
+    let started = false;
+
+    function loadText() {
+      const level = levelSelect.value;
+      const paraList = paragraphs[level];
+      currentText = paraList[Math.floor(Math.random() * paraList.length)];
+      textDisplay.innerHTML = "";  // Clear any existing text
+
+      // Split the text into spans, one for each character
+      currentText.split("").forEach(char => {
+        const span = document.createElement("span");
+        span.innerText = char;
+        textDisplay.appendChild(span);
+      });
+
+      inputBox.value = "";
+      inputBox.disabled = false;
+      inputBox.focus();
+      timer = 0;
+      timerDisplay.textContent = "Time: 0s";
+      wpmDisplay.textContent = "WPM: 0";
+      accuracyDisplay.textContent = "Accuracy: 100%";
+      clearInterval(interval);
+      started = false;
+    }
+
+    inputBox.addEventListener("input", () => {
+      const input = inputBox.value;
+      if (!started) {
+        started = true;
+        interval = setInterval(() => {
+          timer++;
+          timerDisplay.textContent = `Time: ${timer}s`;
+        }, 1000);
+      }
+
+      let correct = 0;
+      const spans = textDisplay.querySelectorAll("span");
+      spans.forEach((span, index) => {
+        const char = input[index];
+        if (char == null) {
+          span.className = "";
+        } else if (char === span.innerText) {
+          span.className = "correct";
+          correct++;
+        } else {
+          span.className = "incorrect";
+        }
+      });
+
+      if (input === currentText) {
+        clearInterval(interval);
+        inputBox.disabled = true;
+        const wordsTyped = input.trim().split(/\s+/).length;
+        const wpm = Math.round((wordsTyped / timer) * 60) || 0;
+        const accuracy = Math.round((correct / currentText.length) * 100) || 100;
+        alert(`Game Over! WPM: ${wpm} | Accuracy: ${accuracy}%`);
+      }
+
+      const wordsTyped = input.trim().split(/\s+/).length;
+      const wpm = Math.round((wordsTyped / (timer || 1)) * 60) || 0;
+      const accuracy = Math.round((correct / currentText.length) * 100) || 100;
+
+      wpmDisplay.textContent = `WPM: ${wpm}`;
+      accuracyDisplay.textContent = `Accuracy: ${accuracy}%`;
+    });
+
+    restartBtn.addEventListener("click", loadText);
+    levelSelect.addEventListener("change", loadText);
+
+    window.onload = loadText;
+  </script>
+
+</body>
+</html>
